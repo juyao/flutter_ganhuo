@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -77,15 +78,31 @@ class _MenuState extends State<MenuListView>{
   }
   @override
   Widget build(BuildContext context) {
-    return new Center(
-      child: new Text("test"),
-    );
+    return new ListView.builder(
+      itemCount: _menus.length,
+        itemBuilder: (context, i){
+        return new Text(_menus[i].name);
+    });
   }
 
   Future getMenuInfo()async {
     Dio dio = new Dio();
     Response menuResponse = await dio.get("http://gank.io/api/xiandu/categories");
-    print(menuResponse.data);
+    Map jsonResult = JSON.decode(menuResponse.data.toString());
+    if(!jsonResult["error"]){
+      List data = JSON.decode(jsonResult["results"]);
+      List<MenuItem> result=[];
+      for(var i=0;i<data.length;i++){
+        result.add(MenuItem.fromJson(data[i]));
+      }
+      print(_menus.toString());
+      setState(() {
+          _menus=result;
+      });
+
+    }
+
+
   }
 
 
