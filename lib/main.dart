@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_ganhuo/bean/menuitem.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+
+import 'package:flutter_ganhuo/utils/NetUtils.dart';
 
 void main() => runApp(new MyApp());
 
@@ -52,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-
           ],
         ),
       ),
@@ -73,6 +75,7 @@ class _MenuState extends State<MenuListView>{
     // TODO: implement initState
     super.initState();
     _menus=List<MenuItem>();
+    print("请求菜单信息------");
     getMenuInfo();
 
   }
@@ -81,29 +84,56 @@ class _MenuState extends State<MenuListView>{
     return new ListView.builder(
       itemCount: _menus.length,
         itemBuilder: (context, i){
-        return new Text(_menus[i].name);
+        return new MenuListTile(_menus[i]);
     });
   }
 
   Future getMenuInfo()async {
+      var url="http://gank.io/api/xiandu/categories";
     Dio dio = new Dio();
-    Response menuResponse = await dio.get("http://gank.io/api/xiandu/categories");
-    Map jsonResult = JSON.decode(menuResponse.data.toString());
-    if(!jsonResult["error"]){
-      List data = JSON.decode(jsonResult["results"]);
-      List<MenuItem> result=[];
-      for(var i=0;i<data.length;i++){
-        result.add(MenuItem.fromJson(data[i]));
-      }
-      print(_menus.toString());
-      setState(() {
+    Response response=await dio.get(url);
+      Map<String, dynamic>  jsonResult = response.data;
+      if(!jsonResult["error"]){
+        List data = jsonResult["results"];
+        List<MenuItem> result=[];
+        for(var i=0;i<data.length;i++){
+          result.add(MenuItem.fromJson(data[i]));
+        }
+        print(_menus.toString());
+        setState(() {
           _menus=result;
-      });
+        });
 
-    }
+      }
+
+
+
 
 
   }
 
+
+}
+class MenuListTile extends StatefulWidget{
+  MenuItem menuItem;
+
+  MenuListTile(this.menuItem);
+
+  @override
+  State<StatefulWidget> createState() {
+    return new MenuTileState(menuItem);
+  }
+}
+class MenuTileState extends State<MenuListTile>{
+  MenuItem menuItem;
+
+  MenuTileState(MenuItem menuItem){
+    this.menuItem=menuItem;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Center(child: new Text(menuItem.name),);
+  }
 
 }
