@@ -47,7 +47,18 @@ class _MyHomePageState extends State<MyHomePage> {
         title: new Text(widget.title),
       ),
       drawer: Drawer(
-        child: new MenuListView(),
+        child: new Column(children: <Widget>[
+          DrawerHeader(
+            child:new Image.network("http://s6.51cto.com/wyfs02/M00/5C/96/wKiom1Ud68XRO27VAAGBrhfA-0g392.jpg",),
+            margin: const EdgeInsets.only(bottom: 0.0),
+            padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+            decoration: BoxDecoration(color: Colors.white),
+          )
+          ,new MenuListView()
+        ],)
+        //new MenuListView(),
+
+
       ),
       body: new Center(
         // Center is a layout widget. It takes a single child and positions it
@@ -83,8 +94,15 @@ class _MenuState extends State<MenuListView>{
   Widget build(BuildContext context) {
     return new ListView.builder(
       itemCount: _menus.length,
+        padding: const EdgeInsets.all(16.0),
+        shrinkWrap: true,
         itemBuilder: (context, i){
-        return new MenuListTile(_menus[i]);
+        print("$i===${i.isOdd}");
+        return new Column(children: <Widget>[
+          new MenuListTile(_menus[i]),
+          new Divider(height: 2.0)
+        ],);
+        //return new MenuListTile(_menus[i]);
     });
   }
 
@@ -126,6 +144,7 @@ class MenuListTile extends StatefulWidget{
 }
 class MenuTileState extends State<MenuListTile>{
   MenuItem menuItem;
+  final _biggerFont = const TextStyle(fontSize: 18.0);
 
   MenuTileState(MenuItem menuItem){
     this.menuItem=menuItem;
@@ -133,7 +152,13 @@ class MenuTileState extends State<MenuListTile>{
 
   @override
   Widget build(BuildContext context) {
-    return new Center(child: new Text(menuItem.name),);
+    return new  ListTile(
+      title: new Text(
+        menuItem.name,
+        textAlign: TextAlign.center,
+        style: _biggerFont,
+      ),
+    );
   }
 
 }
