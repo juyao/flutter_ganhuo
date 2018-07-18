@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ganhuo/bean/menuitem.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter_ganhuo/bean/xdcategorytype.dart';
 
 import 'package:flutter_ganhuo/utils/NetUtils.dart';
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: '干货集中营'),
+      home: new MyHomePage(title: '闲读'),
     );
   }
 }
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
+
   @override
   _MyHomePageState createState() => new _MyHomePageState();
 }
@@ -49,10 +51,12 @@ class _MyHomePageState extends State<MyHomePage> {
       drawer: Drawer(
         child: new Column(children: <Widget>[
           DrawerHeader(
-            child:new Image.network("http://s6.51cto.com/wyfs02/M00/5C/96/wKiom1Ud68XRO27VAAGBrhfA-0g392.jpg",),
+            //child:new Image.network("https://desk-fd.zol-img.com.cn/t_s2880x1800c5/g5/M00/0F/07/ChMkJlauy1qIdJC1AEohbxroTTQAAH81AG-LL8ASiGH977.jpg",)
+           //child: new Container(color: Colors.red,child: new Image.network("https://desk-fd.zol-img.com.cn/t_s2880x1800c5/g5/M00/0F/07/ChMkJlauy1qIdJC1AEohbxroTTQAAH81AG-LL8ASiGH977.jpg",),)
             margin: const EdgeInsets.only(bottom: 0.0),
             padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-            decoration: BoxDecoration(color: Colors.white),
+            decoration: BoxDecoration(color: Colors.white,
+                image:new DecorationImage(image: NetworkImage("https://desk-fd.zol-img.com.cn/t_s2880x1800c5/g5/M00/0F/07/ChMkJlauy1qIdJC1AEohbxroTTQAAH81AG-LL8ASiGH977.jpg"))),
           )
           ,new MenuListView()
         ],)
@@ -88,7 +92,6 @@ class _MenuState extends State<MenuListView>{
     _menus=List<MenuItem>();
     print("请求菜单信息------");
     getMenuInfo();
-
   }
   @override
   Widget build(BuildContext context) {
@@ -134,9 +137,7 @@ class _MenuState extends State<MenuListView>{
 }
 class MenuListTile extends StatefulWidget{
   MenuItem menuItem;
-
   MenuListTile(this.menuItem);
-
   @override
   State<StatefulWidget> createState() {
     return new MenuTileState(menuItem);
@@ -149,7 +150,6 @@ class MenuTileState extends State<MenuListTile>{
   MenuTileState(MenuItem menuItem){
     this.menuItem=menuItem;
   }
-
   @override
   Widget build(BuildContext context) {
     return new  ListTile(
@@ -162,3 +162,47 @@ class MenuTileState extends State<MenuListTile>{
   }
 
 }
+class ContentListView extends StatefulWidget{
+  List<XdCategoryType> types;
+
+  ContentListView(this.types);
+
+  @override
+  State<StatefulWidget> createState() {
+    return ContentState(types);
+  }
+
+}
+class ContentState extends State<ContentListView>{
+  List<XdCategoryType> types;
+  ContentState(this.types);
+  @override
+  Widget build(BuildContext context) {
+      return new ListView.builder(itemBuilder: (context,i){
+        return new Column(children: <Widget>[
+          ListTile(leading: new Image.network(types[i].icon),
+          title: Text(types[i].title),),
+          new Divider(height: 2.0)
+        ],);
+      },itemCount: types.length,);
+  }
+  Future getTypeInfo(String menu)async {
+    var typeUrl=" http://gank.io/api/xiandu/category/$menu";
+    Dio dio = new Dio();
+    Response response=await dio.get(typeUrl);
+    Map<String, dynamic>  jsonResult = response.data;
+    if(!jsonResult["error"]){
+      List data = jsonResult["results"];
+      List<XdCategoryType> result=[];
+      for(var i=0;i<data.length;i++){
+        result.add(XdCategoryType.fromJson(data[i]));
+      }
+      setState(() {
+        types=result;
+      });
+
+    }
+  }
+
+}
+
