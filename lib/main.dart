@@ -32,13 +32,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> implements MenuClicklistener{
   List<MenuItem> _menus;
   List<XdCategoryType> _types;
+  String _picUrl;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _menus=List<MenuItem>();
     _types=List<XdCategoryType>();
+    _picUrl="http://ww4.sinaimg.cn/large/7a8aed7bjw1f1052bhjauj20f00l6q4o.jpg";
     getMenuInfo();
+    getRadompic();
   }
   @override
   Widget build(BuildContext context) {
@@ -62,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> implements MenuClicklistener{
             margin: const EdgeInsets.only(bottom: 0.0),
             padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
             decoration: BoxDecoration(color: Colors.white,
-                image:new DecorationImage(image: NetworkImage("https://desk-fd.zol-img.com.cn/t_s2880x1800c5/g5/M00/0F/07/ChMkJlauy1qIdJC1AEohbxroTTQAAH81AG-LL8ASiGH977.jpg"))),
+                image:new DecorationImage(image: NetworkImage(_picUrl),fit: BoxFit.fill)),
           )
           ,new MenuListView(_menus,this)
         ],)
@@ -74,7 +77,9 @@ class _MyHomePageState extends State<MyHomePage> implements MenuClicklistener{
     );
   }
 
-
+  /**
+   * 获取菜单信息
+   */
   Future getMenuInfo()async {
     var url="http://gank.io/api/xiandu/categories";
     Dio dio = new Dio();
@@ -95,6 +100,10 @@ class _MyHomePageState extends State<MyHomePage> implements MenuClicklistener{
       });
     }
   }
+
+  /**
+   * 获取分类列表
+   */
   Future getTypeInfo(String menu)async {
     var typeUrl="http://gank.io/api/xiandu/category/$menu";
     Dio dio = new Dio();
@@ -110,6 +119,22 @@ class _MyHomePageState extends State<MyHomePage> implements MenuClicklistener{
         _types=result;
       });
 
+    }
+  }
+
+  /**
+   * 随机获取一张妹子图片
+   */
+  Future getRadompic()async {
+    String picUrl="http://gank.io/api/random/data/福利/1";
+    Dio dio = new Dio();
+    Response response=await dio.get(picUrl);
+    Map<String, dynamic>  jsonResult = response.data;
+    if(!jsonResult["error"]){
+      String pic=jsonResult["results"][0]["url"];
+      setState(() {
+          _picUrl=pic;
+      });
     }
   }
 
@@ -169,7 +194,7 @@ class TypeListView extends StatelessWidget{
 }
 
 abstract class MenuClicklistener {
-  void click(int position); // 这是一个抽象方法，不需要abstract关键字，是隐式接口的一部分。
+  void click(int position);
 }
 
 
