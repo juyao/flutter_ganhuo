@@ -34,6 +34,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<MenuItem> _menus;
+  List<XdCategoryType> _types;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _menus=List<MenuItem>();
+    _types=List<XdCategoryType>();
+    getMenuInfo();
+  }
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -58,136 +68,39 @@ class _MyHomePageState extends State<MyHomePage> {
             decoration: BoxDecoration(color: Colors.white,
                 image:new DecorationImage(image: NetworkImage("https://desk-fd.zol-img.com.cn/t_s2880x1800c5/g5/M00/0F/07/ChMkJlauy1qIdJC1AEohbxroTTQAAH81AG-LL8ASiGH977.jpg"))),
           )
-          ,new MenuListView()
+          ,new MenuListView(_menus)
         ],)
         //new MenuListView(),
 
 
       ),
-      body: new Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          ],
-        ),
-      ),
+      body: TypeListView(_types),
     );
   }
-}
-class MenuListView extends StatefulWidget{
-  @override
-  State<StatefulWidget> createState() {
-    return new _MenuState();
-  }
 
-}
-class _MenuState extends State<MenuListView>{
-  List<MenuItem> _menus;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _menus=List<MenuItem>();
-    print("请求菜单信息------");
-    getMenuInfo();
-  }
-  @override
-  Widget build(BuildContext context) {
-    return new ListView.builder(
-      itemCount: _menus.length,
-        padding: const EdgeInsets.all(16.0),
-        shrinkWrap: true,
-        itemBuilder: (context, i){
-        print("$i===${i.isOdd}");
-        return new Column(children: <Widget>[
-          new MenuListTile(_menus[i]),
-          new Divider(height: 2.0)
-        ],);
-        //return new MenuListTile(_menus[i]);
-    });
-  }
 
   Future getMenuInfo()async {
-      var url="http://gank.io/api/xiandu/categories";
+    var url="http://gank.io/api/xiandu/categories";
     Dio dio = new Dio();
     Response response=await dio.get(url);
-      Map<String, dynamic>  jsonResult = response.data;
-      if(!jsonResult["error"]){
-        List data = jsonResult["results"];
-        List<MenuItem> result=[];
-        for(var i=0;i<data.length;i++){
-          result.add(MenuItem.fromJson(data[i]));
-        }
-        print(_menus.toString());
-        setState(() {
-          _menus=result;
-        });
-
+    Map<String, dynamic>  jsonResult = response.data;
+    if(!jsonResult["error"]){
+      List data = jsonResult["results"];
+      List<MenuItem> result=[];
+      for(var i=0;i<data.length;i++){
+        result.add(MenuItem.fromJson(data[i]));
       }
-
-
-
-
-
-  }
-
-
-}
-class MenuListTile extends StatefulWidget{
-  MenuItem menuItem;
-  MenuListTile(this.menuItem);
-  @override
-  State<StatefulWidget> createState() {
-    return new MenuTileState(menuItem);
-  }
-}
-class MenuTileState extends State<MenuListTile>{
-  MenuItem menuItem;
-  final _biggerFont = const TextStyle(fontSize: 18.0);
-
-  MenuTileState(MenuItem menuItem){
-    this.menuItem=menuItem;
-  }
-  @override
-  Widget build(BuildContext context) {
-    return new  ListTile(
-      title: new Text(
-        menuItem.name,
-        textAlign: TextAlign.center,
-        style: _biggerFont,
-      ),
-    );
-  }
-
-}
-class ContentListView extends StatefulWidget{
-  List<XdCategoryType> types;
-
-  ContentListView(this.types);
-
-  @override
-  State<StatefulWidget> createState() {
-    return ContentState(types);
-  }
-
-}
-class ContentState extends State<ContentListView>{
-  List<XdCategoryType> types;
-  ContentState(this.types);
-  @override
-  Widget build(BuildContext context) {
-      return new ListView.builder(itemBuilder: (context,i){
-        return new Column(children: <Widget>[
-          ListTile(leading: new Image.network(types[i].icon),
-          title: Text(types[i].title),),
-          new Divider(height: 2.0)
-        ],);
-      },itemCount: types.length,);
+      if(result.length>0){
+        getTypeInfo(result[0].enName);
+      }
+      print(_menus.toString());
+      setState(() {
+        _menus=result;
+      });
+    }
   }
   Future getTypeInfo(String menu)async {
-    var typeUrl=" http://gank.io/api/xiandu/category/$menu";
+    var typeUrl="http://gank.io/api/xiandu/category/$menu";
     Dio dio = new Dio();
     Response response=await dio.get(typeUrl);
     Map<String, dynamic>  jsonResult = response.data;
@@ -198,11 +111,61 @@ class ContentState extends State<ContentListView>{
         result.add(XdCategoryType.fromJson(data[i]));
       }
       setState(() {
-        types=result;
+        _types=result;
       });
 
     }
   }
-
 }
+class MenuListView extends StatelessWidget{
+  List<MenuItem> _menus;
+  MenuListView(this._menus);
+  @override
+  Widget build(BuildContext context) {
+    return new ListView.builder(
+        itemCount: _menus.length,
+        padding: const EdgeInsets.all(16.0),
+        shrinkWrap: true,
+        itemBuilder: (context, i){
+          print("$i===${i.isOdd}");
+          return new Column(children: <Widget>[
+            new MenuListTile(_menus[i]),
+            new Divider(height: 2.0)
+          ],);
+          //return new MenuListTile(_menus[i]);
+        });
+  }
+}
+
+class MenuListTile extends StatelessWidget{
+  MenuItem menuItem;
+  MenuListTile(this.menuItem);
+  final _biggerFont = const TextStyle(fontSize: 18.0);
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return new  ListTile(
+      title: new Text(
+        menuItem.name,
+        textAlign: TextAlign.center,
+        style: _biggerFont,
+      ),
+    );
+  }
+}
+class TypeListView extends StatelessWidget{
+  List<XdCategoryType> types;
+  TypeListView(this.types);
+  @override
+  Widget build(BuildContext context) {
+    return new ListView.builder(itemBuilder: (context,i){
+      return new Column(children: <Widget>[
+        ListTile(leading: new Image.network(types[i].icon),
+          title: Text(types[i].title),),
+        new Divider(height: 2.0)
+      ],);
+    },itemCount: types.length,);
+  }
+}
+
 
