@@ -186,7 +186,10 @@ class TypeListView extends StatelessWidget{
     return new ListView.builder(itemBuilder: (context,i){
       return new Column(children: <Widget>[
         ListTile(leading: new Image.network(types[i].icon),
-          title: Text(types[i].title),),
+          title: Text(types[i].title),
+        onTap: (){
+
+        },),
         new Divider(height: 2.0)
       ],);
     },itemCount: types.length,);
