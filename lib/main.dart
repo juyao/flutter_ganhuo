@@ -1,13 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ganhuo/bean/menuitem.dart';
-import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter_ganhuo/bean/xdcategorytype.dart';
-
-import 'package:flutter_ganhuo/utils/NetUtils.dart';
 
 void main() => runApp(new MyApp());
 
@@ -33,7 +29,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => new _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> implements MenuClicklistener{
   List<MenuItem> _menus;
   List<XdCategoryType> _types;
   @override
@@ -68,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
             decoration: BoxDecoration(color: Colors.white,
                 image:new DecorationImage(image: NetworkImage("https://desk-fd.zol-img.com.cn/t_s2880x1800c5/g5/M00/0F/07/ChMkJlauy1qIdJC1AEohbxroTTQAAH81AG-LL8ASiGH977.jpg"))),
           )
-          ,new MenuListView(_menus)
+          ,new MenuListView(_menus,this)
         ],)
         //new MenuListView(),
 
@@ -116,10 +112,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
     }
   }
+
+  @override
+  void click(int position) {
+    getTypeInfo(_menus[position].enName);
+
+  }
 }
 class MenuListView extends StatelessWidget{
   List<MenuItem> _menus;
-  MenuListView(this._menus);
+  MenuClicklistener clicklistener;
+  MenuListView(this._menus, this.clicklistener);
+  final _biggerFont = const TextStyle(fontSize: 18.0);
   @override
   Widget build(BuildContext context) {
     return new ListView.builder(
@@ -129,33 +133,29 @@ class MenuListView extends StatelessWidget{
         itemBuilder: (context, i){
           print("$i===${i.isOdd}");
           return new Column(children: <Widget>[
-            new MenuListTile(_menus[i]),
+            new  ListTile(
+              title: new Text(
+                _menus[i].name,
+                textAlign: TextAlign.center,
+                style: _biggerFont,
+              ),
+              onTap:(){
+                if(null!=clicklistener){
+                  clicklistener.click(i);
+                }
+                Navigator.pop(context);
+              } ,
+            ),
             new Divider(height: 2.0)
           ],);
           //return new MenuListTile(_menus[i]);
         });
   }
 }
-
-class MenuListTile extends StatelessWidget{
-  MenuItem menuItem;
-  MenuListTile(this.menuItem);
-  final _biggerFont = const TextStyle(fontSize: 18.0);
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return new  ListTile(
-      title: new Text(
-        menuItem.name,
-        textAlign: TextAlign.center,
-        style: _biggerFont,
-      ),
-    );
-  }
-}
 class TypeListView extends StatelessWidget{
   List<XdCategoryType> types;
   TypeListView(this.types);
+
   @override
   Widget build(BuildContext context) {
     return new ListView.builder(itemBuilder: (context,i){
@@ -166,6 +166,10 @@ class TypeListView extends StatelessWidget{
       ],);
     },itemCount: types.length,);
   }
+}
+
+abstract class MenuClicklistener {
+  void click(int position); // 这是一个抽象方法，不需要abstract关键字，是隐式接口的一部分。
 }
 
 
