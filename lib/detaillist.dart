@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ganhuo/bean/xddetail.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 
 
@@ -20,6 +21,8 @@ class DetailList extends StatefulWidget{
 }
 class DetailListState extends State<DetailList>{
   List<XdDetail> _details=[];
+  int currentPage=1;
+  bool haveFinished=false;
   @override
   void initState() {
     super.initState();
@@ -29,7 +32,15 @@ class DetailListState extends State<DetailList>{
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(appBar: AppBar(title: new Text(widget.title),),body: new ListView.builder(itemBuilder: (context,i){
-      return new Column(children: <Widget>[
+      print("i:$i,_details.length:${_details.length}");
+      if(i>=_details.length-1){
+        currentPage++;
+        if(!haveFinished){
+          getDetaillist();
+        }
+
+      }
+      return new GestureDetector(child: new Column(children: <Widget>[
         Stack(children: <Widget>[
           CoverImage(_details[i].cover),
           new Positioned(child: new Container(child: new Text(_details[i].title,
@@ -37,14 +48,25 @@ class DetailListState extends State<DetailList>{
             softWrap: true,
             overflow: TextOverflow.ellipsis,
             maxLines: 2,),
-          padding: const EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 5.0),
-          decoration: BoxDecoration(color: const Color(0x80000000)),) ,bottom: 0.0,left: 0.0,right: 0.0,),
+            padding: const EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 5.0),
+            decoration: BoxDecoration(color: const Color(0x80000000)),) ,bottom: 0.0,left: 0.0,right: 0.0,),
         ],)
-      ],);
+      ],),onTap: (){
+        Navigator.of(context).push(new MaterialPageRoute(builder: (context){
+          return new WebviewScaffold(
+            url: _details[i].url,
+            appBar: new AppBar(
+              title: new Text(_details[i].title,),
+            ),
+            withJavascript: true,
+            withZoom: false,
+          );
+        }));
+      },);
     },itemCount: _details.length,),);
   }
   Future getDetaillist()async {
-    var url="http://gank.io/api/xiandu/data/id/${widget.detailId}/count/10/page/1";
+    var url="http://gank.io/api/xiandu/data/id/${widget.detailId}/count/10/page/${currentPage}";
     Dio dio = new Dio();
     Response response=await dio.get(url);
     Map<String, dynamic>  jsonResult = response.data;
@@ -55,7 +77,12 @@ class DetailListState extends State<DetailList>{
         result.add(XdDetail.fromJson(data[i]));
       }
       setState(() {
-        _details=result;
+        if(currentPage==1){
+          _details=result;
+        }else{
+          _details.addAll(result);
+        }
+
       });
     }
 
@@ -114,6 +141,8 @@ class CoverImageState extends State<CoverImage>{
   }
 
 }
+
+
 
 
 
