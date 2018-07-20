@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ganhuo/bean/menuitem.dart';
 import 'package:flutter_ganhuo/bean/xdcategorytype.dart';
+import 'package:flutter_ganhuo/detaillist.dart';
 
 void main() => runApp(new MyApp());
 
@@ -188,7 +189,9 @@ class TypeListView extends StatelessWidget{
         ListTile(leading: new Image.network(types[i].icon),
           title: Text(types[i].title),
         onTap: (){
-
+          Navigator.of(context).push(new MaterialPageRoute(builder: (context){
+              return new DetailList(types[i].id,types[i].title);
+          }));
         },),
         new Divider(height: 2.0)
       ],);
